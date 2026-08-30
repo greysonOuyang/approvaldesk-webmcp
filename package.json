@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "check": "tsc -b --pretty false",
+    "build:agentcore": "esbuild src/agentcore/main.ts --bundle --platform=node --target=node22 --format=cjs --external:@aws-sdk/client-s3 --outfile=dist-agentcore/app.cjs",
+    "check": "tsc -b --pretty false && tsc -p tsconfig.agentcore.json --pretty false --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "test": "bun test",
     "test:browser": "bun tests/browser-smoke.ts",
+    "test:agentcore": "bun test src/agentcore/server.test.ts",
     "agent:demo": "bun src/agent/demo.ts"
   },
   "dependencies": {
@@ -22,8 +24,10 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@types/node": "^26.4.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "esbuild": "^0.28.2",
     "playwright": "^1.62.1"
   }
 }

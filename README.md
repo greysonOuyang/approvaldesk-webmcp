@@ -2,10 +2,11 @@
 
 **Autonomous routine work, exact-revision human decisions.**
 
-ApprovalDesk is a human-in-the-loop agent workflow for consequential forms and repetitive administrative work. It has two agent surfaces over one authority:
+ApprovalDesk is a human-in-the-loop agent workflow for consequential forms and repetitive administrative work. It has three delivery surfaces over one authority:
 
-- a browser-native WebMCP surface with ten structured tools; and
-- an AWS Strands Agents TypeScript agent that can prepare, validate, and route work autonomously, then stop at the real human decision boundary.
+- a browser-native WebMCP surface with ten structured tools;
+- an AWS Strands Agents TypeScript agent that can prepare, validate, and route work autonomously, then stop at the real human decision boundary; and
+- an Amazon Bedrock AgentCore Runtime-compatible Node HTTP wrapper for `/ping` and `/invocations`.
 
 The final submission path **fails closed** until a human approves the exact draft revision. There is no agent-only or UI-only bypass.
 
@@ -29,13 +30,41 @@ Any edit invalidates the prior approval. A stale agent write fails with `REVISIO
 
 The agent is instructed to handle routine work end to end, pass the exact revision it most recently read, and stop once the draft reaches `awaiting_approval`. A later invocation can resume after a real human decision.
 
-The default Strands model is Amazon Bedrock. With AWS credentials configured, run:
+The default Strands model is Amazon Bedrock. With AWS credentials and Bedrock model access configured, run:
 
 ```bash
 bun run agent:demo -- "Prepare a vendor onboarding request for Example Analytics: operational analytics service, $12000 annual spend, customer data access Yes, owner owner@example.com. Stop when human approval is required."
 ```
 
 No AWS secret is required to test the authority model. `src/agent/approval-agent.test.ts` supplies a deterministic model provider but still executes the official Strands `Agent.invoke()` loop and the real typed tools.
+
+## AgentCore Runtime readiness
+
+`src/agentcore/server.ts` implements the Amazon Bedrock AgentCore Runtime HTTP contract around the same Strands agent:
+
+- `GET /ping` → health response;
+- `POST /invocations` with `{ "prompt": "..." }` → `Agent.invoke()`;
+- a fresh model conversation per Runtime invocation while the ApprovalDesk workflow store remains the single approval authority.
+
+Build the Node 22 deployment artifact:
+
+```bash
+bun run check
+bun run test:agentcore
+bun run build:agentcore
+node dist-agentcore/app.cjs
+```
+
+Then, in another shell:
+
+```bash
+curl http://127.0.0.1:8080/ping
+curl -X POST http://127.0.0.1:8080/invocations \
+  -H 'content-type: application/json' \
+  -d '{"prompt":"Prepare the request and stop when a human decision is required."}'
+```
+
+The bundle is deployment-ready input, **not proof that an AgentCore Runtime has been created**. Remote deployment still requires a real AWS account, credentials, IAM permissions, and model access.
 
 ## WebMCP implementation
 
@@ -64,10 +93,11 @@ Public static demo: <https://greysonouyang.github.io/approvaldesk-webmcp/>
 bun test
 bun run check
 bun run build
+bun run build:agentcore
 bun run test:browser
 ```
 
-The test suite covers both the underlying exact-revision state machine and the Strands agent loop. Browser smoke exercises the human queue and final submission gate in Chrome.
+The test suite covers the underlying exact-revision state machine, the Strands agent loop, and the AgentCore Runtime HTTP contract. Browser smoke exercises the human queue and final submission gate in Chrome.
 
 Seeded workflows: expense reimbursement, community event permit, vendor onboarding.
 
@@ -75,9 +105,9 @@ Seeded workflows: expense reimbursement, community event permit, vendor onboardi
 
 The Strands extension is being prepared for the AWS **Agents for Humans** hackathon, Professional Agents track. ApprovalDesk was created during the hackathon's submission period. The repository remains public and MIT licensed.
 
-The current public GitHub Pages deployment demonstrates the human review surface and WebMCP contract. The Strands agent currently runs as a local/CLI agent; Amazon Bedrock is the default production model when AWS credentials are configured. Amazon Bedrock AgentCore is a logical deployment target but is **not claimed as deployed** in this repository yet.
+The public GitHub Pages deployment demonstrates the human review surface and WebMCP contract. The Strands agent and AgentCore-compatible Runtime artifact are locally verified. Amazon Bedrock is the default production model when AWS credentials are configured. **No AgentCore cloud deployment is claimed until AWS resource receipts exist.**
 
-See [`docs/aws-agents-for-humans.md`](docs/aws-agents-for-humans.md) for the hackathon architecture, disclosure notes, demo plan, and remaining deployment boundary.
+See [`docs/aws-agents-for-humans.md`](docs/aws-agents-for-humans.md) for the hackathon architecture, disclosure notes, demo plan, and remaining AWS deployment boundary.
 
 ## Architecture
 

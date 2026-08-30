@@ -4,7 +4,9 @@ ApprovalDesk deliberately has multiple agent interfaces but one workflow authori
 
 ```mermaid
 flowchart LR
-  User[User request] --> Strands[Strands Agent]
+  User[User request] --> AgentCore[AgentCore Runtime HTTP]
+  User --> Strands[Local Strands Agent]
+  AgentCore --> Strands
   Model[Amazon Bedrock or deterministic test model] <--> Strands
   Strands -->|typed Zod tools| AgentTools[ApprovalDesk Strands tools]
 
@@ -36,23 +38,30 @@ The AWS-oriented path is a real `@strands-agents/sdk` `Agent`:
 3. the tool mutates or reads the shared domain store;
 4. the tool result returns to the model;
 5. the loop continues through create → fill → validate → request approval;
-6. once the store reports `awaiting_approval`, the system prompt requires the agent to end its turn and surface the decision to the human;
-7. approval is a human-only state transition outside that invocation; and
-8. a later invocation re-reads the draft and may submit only the exact approved revision.
+6. once the exact draft is awaiting approval, the agent stops instead of simulating a human decision; and
+7. a later invocation can resume only after the store records a real human approval.
 
-`src/agent/approval-agent.test.ts` drives this full loop through `Agent.invoke()` using a deterministic `Model`. This is not a mock of the domain functions: Strands still performs tool selection, tool execution, tool-result feedback, and turn termination. The deterministic provider makes the authority behavior verifiable without AWS credentials.
+The deterministic test model exists only to make this orchestration repeatable without external credentials. It still drives the Strands `Agent.invoke()` loop and real tool executor.
+
+## AgentCore Runtime boundary
+
+`src/agentcore/server.ts` adapts the same Strands agent to the Amazon Bedrock AgentCore Runtime HTTP protocol:
+
+- `GET /ping` is the health endpoint;
+- `POST /invocations` accepts a prompt and invokes a fresh Strands conversation;
+- workflow state and exact human approvals remain owned by the existing ApprovalDesk store;
+- no AWS resource, IAM role, account ID, region, or deployed Runtime is fabricated in local configuration.
+
+`bun run build:agentcore` bundles `src/agentcore/main.ts` with esbuild for a Node 22 deployment entrypoint at `dist-agentcore/app.cjs`.
 
 ## Authority boundaries
 
-- `src/store.ts` owns workflow state transitions, optimistic revision checks, approval invalidation, and the final human-approval gate.
-- `src/agent/approval-tools.ts` adapts the store into Zod-typed Strands tools.
-- `src/agent/approval-agent.ts` owns agent policy and orchestration, not approval authority.
-- `src/webmcp.ts` adapts the same store into browser-native WebMCP tools.
-- `src/App.tsx` is the human review surface and WebMCP demo console.
-- No model provider, tool adapter, UI action, or browser surface has a separate submission authority.
+- `src/store.ts` owns state transitions, revision checks, and the human-approval gate.
+- `src/agent/approval-tools.ts` adapts that authority into Strands tools.
+- `src/agent/approval-agent.ts` owns agent instructions and orchestration, not workflow truth.
+- `src/agentcore/server.ts` owns only the AgentCore HTTP transport boundary.
+- `src/webmcp.ts` adapts the same domain transitions into WebMCP tools.
+- `src/App.tsx` adapts the same transitions into a human UI and demo Tool Console.
+- No UI-only, WebMCP-only, Strands-only, or AgentCore-only submission bypass exists.
 
-## Persistence and deployment
-
-The static web demo uses `localStorage`. Node-side Strands runs reuse the same state machine even when browser storage is unavailable. A production multi-user deployment should replace persistence with a durable service while retaining `src/store.ts` semantics as the authority contract.
-
-Amazon Bedrock is the Strands SDK's default production model path when AWS credentials are configured. Amazon Bedrock AgentCore is a suitable future hosted runtime, but the repository does not claim an AgentCore deployment until one has been live-verified.
+The public web demo uses `localStorage` for browser persistence so it can remain a zero-account static deployment. The Node-side Strands/AgentCore path can run without browser storage while preserving the same domain rules. A production multi-instance AgentCore deployment would replace that persistence adapter with a durable server-backed store before relying on cross-instance approval state; this repository does not pretend local in-process persistence is horizontally durable.
