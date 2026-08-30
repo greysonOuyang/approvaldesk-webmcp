@@ -9,14 +9,17 @@
     "check": "tsc -b --pretty false",
     "preview": "vite preview --host 127.0.0.1",
     "test": "bun test",
-    "test:browser": "bun tests/browser-smoke.ts"
+    "test:browser": "bun tests/browser-smoke.ts",
+    "agent:demo": "bun src/agent/demo.ts"
   },
   "dependencies": {
+    "@strands-agents/sdk": "^1.15.0",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/react": "latest",

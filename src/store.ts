@@ -53,7 +53,11 @@ let state = load()
 
 function persist() {
   state = structuredClone(state)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch {
+    // Node-side Strands agents share this exact state machine without requiring browser storage.
+  }
   listeners.forEach((listener) => listener())
 }
 
