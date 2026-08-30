@@ -10,7 +10,7 @@ Forms show why browser agents need semantics, not coordinates. A normal agent mu
 
 ### Implementation
 
-ApprovalDesk registers nine tools with `document.modelContext.registerTool`. Each delegates to shared workflow handlers also used by the React UI. The store owns validation, approval state, safe transitions, and audit events. An in-app Tool Console calls the exact same handlers for browsers where WebMCP is not enabled.
+ApprovalDesk registers ten tools with `document.modelContext.registerTool`. Each delegates to shared workflow handlers also used by the React UI. The store owns validation, approval state, safe transitions, and audit events. An in-app Tool Console calls the exact same handlers for browsers where WebMCP is not enabled.
 
 ### Demo storyboard (<3 minutes)
 

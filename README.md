@@ -6,7 +6,7 @@ ApprovalDesk is a WebMCP-native demo for consequential forms and workflows. Agen
 
 ## Why WebMCP
 
-Traditional browser agents infer meaning from labels, DOM shape, and click targets. ApprovalDesk exposes workflow semantics directly through nine tools: `list_forms`, `get_form_schema`, `create_draft`, `set_draft_fields`, `get_draft`, `validate_draft`, `request_approval`, `submit_draft`, and `get_audit_log`.
+Traditional browser agents infer meaning from labels, DOM shape, and click targets. ApprovalDesk exposes workflow semantics directly through ten tools: `list_forms`, `get_form_schema`, `list_pending_approvals`, `create_draft`, `set_draft_fields`, `get_draft`, `validate_draft`, `request_approval`, `submit_draft`, and `get_audit_log`.
 
 The UI and WebMCP tools share the same state and validation handlers. There is no second hidden submission authority.
 
