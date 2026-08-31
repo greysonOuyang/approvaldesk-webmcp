@@ -52,7 +52,7 @@ Build the Node 22 deployment artifact:
 bun run check
 bun run test:agentcore
 bun run build:agentcore
-node dist-agentcore/app.cjs
+node dist-agentcore/app.js
 ```
 
 Then, in another shell:

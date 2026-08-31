@@ -52,7 +52,7 @@ The deterministic test model exists only to make this orchestration repeatable w
 - workflow state and exact human approvals remain owned by the existing ApprovalDesk store;
 - no AWS resource, IAM role, account ID, region, or deployed Runtime is fabricated in local configuration.
 
-`bun run build:agentcore` bundles `src/agentcore/main.ts` with esbuild for a Node 22 deployment entrypoint at `dist-agentcore/app.cjs`.
+`bun run build:agentcore` bundles `src/agentcore/main.ts` with esbuild for a Node 22 deployment entrypoint at `dist-agentcore/app.js` and writes a deployment-local `dist-agentcore/package.json` declaring CommonJS semantics. `bun run package:agentcore` packages those two files into the direct-code CodeZip.
 
 ## Authority boundaries
 

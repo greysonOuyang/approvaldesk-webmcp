@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "build:agentcore": "esbuild src/agentcore/main.ts --bundle --platform=node --target=node22 --format=cjs --external:@aws-sdk/client-s3 --outfile=dist-agentcore/app.cjs",
+    "build:agentcore": "rm -rf dist-agentcore && mkdir -p dist-agentcore && esbuild src/agentcore/main.ts --bundle --platform=node --target=node22 --format=cjs --external:@aws-sdk/client-s3 --outfile=dist-agentcore/app.js && node -e \"require('fs').writeFileSync('dist-agentcore/package.json', JSON.stringify({type:'commonjs'}) + '\\n')\"",
+    "package:agentcore": "bun run build:agentcore && cd dist-agentcore && zip -q approvaldesk-agentcore.zip app.js package.json",
     "check": "tsc -b --pretty false && tsc -p tsconfig.agentcore.json --pretty false --noEmit",
     "preview": "vite preview --host 127.0.0.1",
     "test": "bun test",

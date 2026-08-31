@@ -34,10 +34,10 @@ Local verification:
 ```bash
 bun run test:agentcore
 bun run build:agentcore
-node dist-agentcore/app.cjs
+node dist-agentcore/app.js
 ```
 
-The generated `dist-agentcore/app.cjs` targets Node 22 and bundles the TypeScript entrypoint, Strands agent, and Bedrock runtime path with esbuild. Strands also exposes an optional S3 context-offloader peer (`@aws-sdk/client-s3`); ApprovalDesk does not use that plugin, so the build deliberately leaves that peer external rather than adding an unused S3 dependency to the Runtime artifact.
+The generated `dist-agentcore/app.js` targets Node 22 and bundles the TypeScript entrypoint, Strands agent, and Bedrock runtime path with esbuild. The build also writes `dist-agentcore/package.json` with `{"type":"commonjs"}` so AWS direct-code runtimes receive a `.js` entrypoint while Node interprets the bundle as CommonJS even though the repository root is ESM. `bun run package:agentcore` produces `dist-agentcore/approvaldesk-agentcore.zip` containing exactly `app.js` and `package.json`. Strands also exposes an optional S3 context-offloader peer (`@aws-sdk/client-s3`); ApprovalDesk does not use that plugin, so the build deliberately leaves that peer external rather than adding an unused S3 dependency to the Runtime artifact.
 
 ### What is not claimed yet
 
