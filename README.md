@@ -109,6 +109,12 @@ The public GitHub Pages deployment demonstrates the human review surface and Web
 
 See [`docs/aws-agents-for-humans.md`](docs/aws-agents-for-humans.md) for the hackathon architecture, disclosure notes, demo plan, and remaining AWS deployment boundary.
 
+Submission-ready material:
+
+- [`docs/aws-submission.md`](docs/aws-submission.md) — Devpost-ready description, testing instructions, and pre-existing-work disclosure.
+- [`docs/aws-demo-script.md`](docs/aws-demo-script.md) — under-five-minute demo script and shot list.
+- [`docs/architecture.md`](docs/architecture.md) — architecture diagram and authority boundaries.
+
 ## Architecture
 
 See [`docs/architecture.md`](docs/architecture.md) and the original [`docs/submission.md`](docs/submission.md) WebMCP submission notes.
